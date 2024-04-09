@@ -17,13 +17,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Consultar la collection numbers de la base de datos para obtener todos los documentos
-export const getAllNumbers = async () => { 
-    const querySnapshot = collection(db, 'numbers');
-    const querySnapshotData = await getDocs(querySnapshot);
-    
-    const numbers = querySnapshotData.docs.map((doc) => {
-        return doc.data();
-    });
-    console.log(numbers);
+// Consultar la collection users de la base de datos para obtener todos los documentos
+export const getAllNumbers = async (numberParam) => { 
+
+  const numberNormalize = numberParam.slice(9);
+  console.log(numberNormalize);
+
+  const querySnapshot = collection(db, 'users');
+  const querySnapshotData = await getDocs(querySnapshot);
+  const dataNumbers = querySnapshotData.docs.map( doc  => doc.data());
+  const findNumber = dataNumbers.find( user => user.number === numberNormalize);
+  const result = findNumber ? findNumber.name : 'No se encontró el número';
+
+  console.log(result);
+  return result;
 };

@@ -7,7 +7,9 @@ import { getAllNumbers } from './firebase/firebase'
 function App() {
   const [count, setCount] = useState(0);
 
-  getAllNumbers();
+  const numberParam = 'whatsapp:+573045655669';
+
+  getAllNumbers(numberParam);
 
   return (
     <>
