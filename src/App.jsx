@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import './App.css'
 import { createRealEstate, getRealEstates } from './firebase/firebase'
+import { main } from './openai/transcription'; 
+import audioFile from './assets/audio/prueba.m4a';
 
 const initialData = {
   name: '',
@@ -77,6 +79,8 @@ function App() {
   }
 
   getRealEstates();
+
+  
 
   return (
     <>
