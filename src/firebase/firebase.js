@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, where, query } from "firebase/firestore";
 import {
   getStorage,
   ref,
@@ -16,21 +16,22 @@ const firebaseConfig = {
   appId: "1:530118818996:web:28b92a0d34561d831c2be1",
 };
 
-const app = initializeApp(firebaseConfig);
+// const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 const db = getFirestore();
 
-const createId = () =>
-  Math.random().toString(36).substring(2) + Date.now().toString(36);
+const createId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
 // Consultar la collection numbers de la base de datos para obtener todos los documentos
-export const getAllNumbers = async () => {
-  const querySnapshot = collection(db, "numbers");
-  const querySnapshotData = await getDocs(querySnapshot);
-
-  const numbers = querySnapshotData.docs.map((doc) => {
-    return doc.data();
-  });
-  console.log(numbers);
+export const getAllNumbers = async () => { 
+    const querySnapshot = collection(db, 'numbers');
+    const querySnapshotData = await getDocs(querySnapshot);
+    
+    const numbers = querySnapshotData.docs.map((doc) => {
+        return doc.data();
+    });
+    // console.log(numbers);
+    return numbers;
 };
 
 // Consultar la collection realEstates de la base de datos para obtener todos los documentos
@@ -42,7 +43,8 @@ export const getRealEstates = async () => {
     return doc.data();
   });
 
-  console.log(realEstates);
+  // console.log(realEstates);
+  return realEstates;
 };
 
 // Crear un nuevo documento en la collection realEstates.
@@ -77,4 +79,67 @@ export const createRealEstate = async (data) => {
       console.error("Error al crear la propiedad:", error);
     }
   };
+
+// Función para buscar un propiedad dentro de la collection realEstates de la base de datos usando querys.
+
+// const terminoBusqueda = [
+//   ['city', '==', 'Medellín'],
+//   ['type', '==', 'apartment'],
+//   ['bedrooms', '>=', 3],
+//   ['bathrooms', '>=', 2],
+//   ['kitchen', '==', true],
+//   ['living_room', '==', true],
+//   ['dining_room', '==', true],
+//   ['parking', '==', true],
+//   ['furnished', '==', true],
+//   ['security', '==', true],
+//   ['swimming_pool', '==', true]
+// ]
+
+export const searchRealEstate = async (sector, bathrooms, type) => {
+  const realEstatesRef = collection(db, "realEstates");
+
+  // Realizar la consulta por sector (obligatoria)
+  const qSector = query(realEstatesRef, where("sector", "==", sector));
+  const sectorSnapshot = await getDocs(qSector);
+
+  // Realizar la consulta por baños (opcional)
+  let bathroomsSnapshot;
+  if (bathrooms) {
+    const qBathrooms = query(realEstatesRef, where("bathrooms", "==", bathrooms), where("sector", "==", sector));
+    bathroomsSnapshot = await getDocs(qBathrooms);
+  }
+
+  // Realizar la consulta por tipo (opcional)
+  let typeSnapshot;
+  if (type) {
+    const qType = query(realEstatesRef, where("type", "==", type), where("sector", "==", sector));
+    typeSnapshot = await getDocs(qType);
+  }
+
+  // Combinar los resultados
+  let results = [];
+  let addedDocIds = new Set();
+
+  const addDocToResults = (doc) => {
+    const docData = doc.data();
+    if (!addedDocIds.has(docData.id)) {
+      results.push(docData);
+      addedDocIds.add(docData.id);
+    }
+  };
+
+  sectorSnapshot.forEach(addDocToResults);
+  if (bathroomsSnapshot) bathroomsSnapshot.forEach(addDocToResults);
+  if (typeSnapshot) typeSnapshot.forEach(addDocToResults);
+
+  // Imprimir los resultados
+  results.forEach((result) => {
+    console.log(result);
+  });
+
+  return results;
+
+};
+
   
