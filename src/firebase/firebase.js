@@ -142,4 +142,54 @@ export const searchRealEstate = async (sector, bathrooms, type) => {
 
 };
 
-  
+
+// let images = ['img1', 'img2']
+
+// console.log(images)
+
+export const filterProperties = async (filters) => {
+  const querySnapshot = collection(db, "realEstates");
+  const querySnapshotData = await getDocs(querySnapshot);
+
+  const realEstates = querySnapshotData.docs.map((doc) => {
+    return doc.data();
+  });
+
+  const resultFilter = realEstates.filter(property => {
+    let matches = true;
+
+    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+      matches = matches && property.price >= filters.minPrice && property.price <= filters.maxPrice;
+    }
+    if (filters.title !== undefined || filters.title !== null) {
+        matches = matches && property.title.toLowerCase().includes(filters.title.toLowerCase());
+    }
+    if (filters.type !== undefined || filters.type !== null) {
+        matches = matches && property.type.toLowerCase().includes(filters.type.toLowerCase());
+    }
+    if (filters.city !== undefined || filters.city !== null) {
+        matches = matches && property.city.toLowerCase().includes(filters.city.toLowerCase());
+    }
+    if (filters.sector !== undefined || filters.sector !== null) {
+        matches = matches && property.sector.toLowerCase().includes(filters.sector.toLowerCase());
+    }
+    if (filters.type !== undefined || filters.type !== null) {
+        matches = matches && property.type >= filters.type;
+    }
+
+    return matches;
+  });
+
+  return resultFilter.length > 0 ? resultFilter : "No se encontraron propiedades que coincidan con los filtros aplicados.";
+}
+
+// Ejemplo de uso:
+// const filters = {
+//   minPrice: 0,
+//   maxPrice: 5400000,
+//   city: "bogota",
+//   type: "arriendo",
+// };
+
+// const filteredProperties = filterProperties(filters);
+// console.log(filteredProperties);
