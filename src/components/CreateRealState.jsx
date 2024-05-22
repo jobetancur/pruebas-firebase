@@ -27,8 +27,12 @@ export const CreateRealState = () => {
     setRealEstate({ ...realEstate, name: e.target.value });
   };
 
+  const handleCityChange = (e) => {
+    setRealEstate({ ...realEstate, city: (e.target.value).toLowerCase() });
+  };
+
   const handleSectorChange = (e) => {
-    setRealEstate({ ...realEstate, sector: e.target.value });
+    setRealEstate({ ...realEstate, sector: (e.target.value).toLowerCase() });
   };
 
   const handlePriceChange = (e) => {
@@ -84,6 +88,10 @@ export const CreateRealState = () => {
           <input type="text" name="name" onChange={handleNameChange} />
         </label>
         <label>
+          Ciudad:
+          <input type="text" name="city" onChange={handleCityChange} />
+        </label>
+        <label>
           Sector de la vivienda:
           <input type="text" name="sector" onChange={handleSectorChange} />
         </label>
@@ -121,6 +129,12 @@ export const CreateRealState = () => {
           <option value="casa">Casa</option>
           <option value="apartamento">Apartamento</option>
           <option value="lote">Lote</option>
+        </select>
+        <label>Transacción:</label>
+        <select name="" onChange={handleTypeChange}>
+          <option value="">Seleccione</option>
+          <option value="venta">Venta</option>
+          <option value="arriendo">Arriendo</option>
         </select>
         {/* Cargar imagenes */}
         <p>Cargar imagenes:</p>

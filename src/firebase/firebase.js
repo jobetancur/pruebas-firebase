@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, where, query } from "firebase/firestore";
+import { getFirestore, collection, getDocs, where, query, doc, setDoc } from "firebase/firestore";
 import {
   getStorage,
   ref,
@@ -8,19 +8,19 @@ import {
 } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2z9a0VNRBmbV5kMe_8Qp4vAr9o-E292U",
-  authDomain: "pruebas-inmuebles.firebaseapp.com",
-  projectId: "pruebas-inmuebles",
-  storageBucket: "pruebas-inmuebles.appspot.com",
-  messagingSenderId: "530118818996",
-  appId: "1:530118818996:web:28b92a0d34561d831c2be1",
+  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_APP_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_FIREBASE_APP_ID
 };
 
 // const app = initializeApp(firebaseConfig);
 initializeApp(firebaseConfig);
 const db = getFirestore();
 
-const createId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
+// const createId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
 // Consultar la collection numbers de la base de datos para obtener todos los documentos
 export const getAllNumbers = async () => { 
@@ -49,36 +49,41 @@ export const getRealEstates = async () => {
 
 // Crear un nuevo documento en la collection realEstates.
 export const createRealEstate = async (data) => {
-    try {
-      const id = createId();
-      const storage = getStorage();
-      const storageRef = ref(storage, `images/${id}`);
-  
-      // Subir todas las imágenes en paralelo al storage
-      const uploadPromises = data.images.map(async (image) => {
-        const imageRef = ref(storageRef, `${id}_${image.name}`);
-        await uploadBytesResumable(imageRef, image);
-        return getDownloadURL(imageRef);
-      });
-  
-      // Esperar a que todas las imágenes se suban y obtengan sus URLs
-      const imageUrls = await Promise.all(uploadPromises);
-  
-      // Crear el objeto realEstate con las URLs de las imágenes
-      const realEstate = {
-        ...data,
-        id,
-        images: imageUrls,
-      };
-  
-      // Agregar el nuevo documento a Firestore
-      await addDoc(collection(db, "realEstates"), realEstate);
-  
-      console.log("Propiedad creada exitosamente:", realEstate);
-    } catch (error) {
-      console.error("Error al crear la propiedad:", error);
-    }
-  };
+  try {
+    const storage = getStorage();
+    
+    // Generar un id único para la propiedad
+    const docRef = doc(collection(db, "realEstates"));
+
+    const storageRef = ref(storage, `images/${docRef.id}`);
+
+    // Subir todas las imágenes en paralelo al storage
+    const uploadPromises = data.images.map(async (image) => {
+      const imageRef = ref(storageRef, `${docRef.id}_${image.name}`);
+      await uploadBytesResumable(imageRef, image);
+      return getDownloadURL(imageRef);
+    });
+
+    // Esperar a que todas las imágenes se suban y obtengan sus URLs
+    const imageUrls = await Promise.all(uploadPromises);
+
+    // Crear el objeto realEstate con las URLs de las imágenes
+    const realEstate = {
+      ...data,
+      id: docRef.id,
+      url: `https://pruebas-whomap.com/#/real-estate/${docRef.id}`,
+      images: imageUrls,
+    };
+
+    // Agregar el nuevo documento a Firestore con el id especificado
+    await setDoc(docRef, realEstate);
+
+    console.log("Propiedad creada exitosamente:", realEstate);
+  } catch (error) {
+    console.error("Error al crear la propiedad:", error);
+  }
+};
+
 
 // Función para buscar un propiedad dentro de la collection realEstates de la base de datos usando querys.
 
