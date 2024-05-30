@@ -71,7 +71,7 @@ export const createRealEstate = async (data) => {
     const realEstate = {
       ...data,
       id: docRef.id,
-      url: `https://pruebas-whomap.com/#/real-estate/${docRef.id}`,
+      url: `https://pruebas-whomap.web.app/#/real-estate/${docRef.id}`,
       images: imageUrls,
     };
 
